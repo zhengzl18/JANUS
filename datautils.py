@@ -37,13 +37,27 @@ def get_knowledge_data(name, tokenizer, model_id, nsamples, seed=3):
         print("loaded ...")
         return knowledge_dataset
 
-    if name == "nqopen":
+    if name == "trivia_qa":
+        traindata = load_dataset("trivia_qa", "rc.nocontext", split="train").shuffle(seed=seed).take(nsamples)
+        PROMPT = "Question: {question}?\nAnswer:{answer}"
+        input_texts = [
+            PROMPT.format(question=q, answer=a[0])
+            for q, a in zip(traindata["question"], traindata["answer"]["aliases"])
+        ]
+    elif name == "nqopen":
         traindata = load_dataset("nq_open", split="train").shuffle(seed=seed).take(nsamples)
         PROMPT = "Answer these questions:\n\nQ: {question}?\nAnswer:{answer}"
         input_texts = [
             PROMPT.format(question=q, answer=a[0])
             for q, a in zip(traindata["question"], traindata["answer"])
         ]
+    elif name == "webqs":
+            traindata = load_dataset("web_questions", split="train").shuffle(seed=seed).take(nsamples)
+            PROMPT = "Question: {question}\nAnswer:{answer}"
+            input_texts = [
+                PROMPT.format(question=q, answer=a[0])
+                for q, a in zip(traindata["question"], traindata["answers"])
+            ]
     else:
         raise NotImplementedError
 

@@ -9,7 +9,7 @@ accelerate launch --main_process_port=29400 main.py \
   --tasks humaneval \
   --temperature 0.2 \
   --n_samples 200 \
-  --batch_size 16 \
+  --batch_size 100 \
   --max_memory_per_gpu auto \
   --allow_code_execution \
   --trust_remote_code \
@@ -24,7 +24,7 @@ accelerate launch main.py \
   --tasks humaneval \
   --temperature 0.2 \
   --n_samples 200 \
-  --batch_size 16 \
+  --batch_size 100 \
   --max_memory_per_gpu auto \
   --allow_code_execution \
   --trust_remote_code \

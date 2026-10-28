@@ -359,8 +359,13 @@ if __name__ == "__main__":
     parser.add_argument("--base_model_id", type=str)
     parser.add_argument("--finetuned_model_path", type=str)
     parser.add_argument("--finetuned_model_type", type=str, choices=["pissa", "lora", "ff"])
+    parser.add_argument("--residual_model_path", type=str, default=None)
+    parser.add_argument("--replay_dataset", type=str, default="nqopen")
+    parser.add_argument("--replay_size", type=int, default=256)
+    parser.add_argument("--replay_seed", type=int, default=233)
     parser.add_argument("--threshold", type=float, default=0.95)
     parser.add_argument("--beta", type=float, default=0.7)
+    parser.add_argument("--r_jac_approx", type=int, default=32)
     parser.add_argument("--save_path", type=str)
     args = parser.parse_args()
 
@@ -375,11 +380,11 @@ if __name__ == "__main__":
     tokenizer.pad_token_id = tokenizer.eos_token_id
     
     knowledge_dataset = get_knowledge_data(
-        name="nqopen", 
+        name=args.replay_dataset, 
         tokenizer=tokenizer, 
         model_id=args.base_model_id, 
-        nsamples=256, 
-        seed=233
+        nsamples=args.replay_size, 
+        seed=args.replay_seed
     )
     data_collector = DataCollatorForSupervisedDataset(tokenizer)
     
@@ -394,7 +399,7 @@ if __name__ == "__main__":
     print("Loading original and finetuned models...")
     if args.finetuned_model_type == "pissa":
         pissa_residual_model = AutoModelForCausalLM.from_pretrained(
-            "path_to_pissa_residual_model",  # Set the path to your PiSSA residual model
+            args.residual_model_path,
             dtype=torch.float16,
         )
         finetuned_model = PeftModel.from_pretrained(
@@ -435,6 +440,7 @@ if __name__ == "__main__":
         finetuned_model=finetuned_model,
         target_layers=target_layers,
         cache_dir=f"{args.save_path}/jac_cache",
+        r_jac_approx=args.r_jac_approx,
         delta_threshold=args.threshold,
         beta=args.beta,
     )
